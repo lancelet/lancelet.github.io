@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>Merritt Blog - Getting Started with OpenCL in Haskell</title>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+        <link rel="stylesheet" href="../css/blog.css">
+        <link rel="stylesheet" href="../css/syntax.css">
+    </head>
+    <body>
+        <header>
+            <div class="blog-masthead">
+                <div class="container">
+                    <nav class="nav">
+                        <a class="nav-link" href="../index.html">Home</a>
+                        <a class="nav-link" href="../about.html">About</a>
+                        <a class="nav-link" href="../contact.html">Contact</a>
+                        <a class="nav-link" href="../archive.html">Archive</a>
+                    </nav>
+                </div>
+            </div>
+        </header>
+
+        <main role="main" class="container">
+            <div class="row">
+                <div class="col-sm">
+                    <div>
+                        <!--
+                        
+                          <h1>Getting Started with OpenCL in Haskell</h1>
+                        
+                        -->
+
+                        <div class="blog-post-title-block">
+    <h1 class="blog-post-title">Getting Started with OpenCL in Haskell</h1>
+    <div class="blog-post-byline">
+        Posted on 2017-12-26
+        
+          by Jonathan Merritt
+        
+    </div>
+    
+      <div class="blog-post-byline">
+          Tags: <a href="../tags/OpenCL.html">OpenCL</a>, <a href="../tags/Haskell.html">Haskell</a>, <a href="../tags/GPU.html">GPU</a>, <a href="../tags/tutorial.html">tutorial</a>
+      </div>
+    
+</div>
+
+<div class="blog-post">
+    <h2 id="introduction">Introduction</h2>
+<p><a href="https://en.wikipedia.org/wiki/OpenCL">OpenCL</a> provides a way to interface with GPUs, CPUs, and other hardware to perform portable parallel processing. Over the last few weeks, I’ve found that Haskell has good support for OpenCL. For a beginner like myself, there are really three different things to learn about:</p>
+<ul>
+<li>OpenCL execution model</li>
+<li>OpenCL C dialect</li>
+<li>Haskell bindings</li>
+</ul>
+<p>If you’re brand new to OpenCL, I <em>highly</em> recommend this very short series on YouTube by Justin Hensley of AMD:</p>
+<p>
+<center>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/aKtpZuokeEk" frameborder="0" gesture="media" allow="encrypted-media" allowfullscreen>
+</iframe>
+</center>
+</p>
+<p>It has an early-90s Microsoft-instructional-video vibe, but aside from that, it’s really a great overview.</p>
+<h2 id="which-opencl-package">Which OpenCL package?</h2>
+<p>There are several <a href="https://hackage.haskell.org/packages/search?terms=opencl">OpenCL packages on Hackage</a>, and it’s not particularly clear which you should use. I’ll try to summarise them here:</p>
+<ul>
+<li><p><a href="https://hackage.haskell.org/package/OpenCL"><code>OpenCL</code></a> - this is probably the package you want. It’s a fork of <code>OpenCLRaw</code> that provides a higher-level interface. This is the package I’ll use in my examples. (Thanks to Anthony Cowley for suggesting this package.)</p></li>
+<li><p><a href="https://hackage.haskell.org/package/OpenCLRaw"><code>OpenCLRaw</code></a> - the original thin binding to the OpenCL C library. It exposes much of the API using types from <code>Foreign.C.Types</code> and, as a result, it’s not very convenient. The original homepage link from Hackage is also dead.</p></li>
+<li><p><a href="https://hackage.haskell.org/package/hopencl"><code>hopencl</code></a> - a binding originally written by Benedict Gaster of AMD. I tried this package first, but creating OpenCL <code>Context</code>s didn’t work for me.</p></li>
+<li><p><a href="https://hackage.haskell.org/package/OpenCLWrappers"><code>OpenCLWrappers</code></a> - yet another fork of <code>OpenCLRaw</code>. It doesn’t seem to offer much beyond what the <code>OpenCL</code> package does. I haven’t tried using it however.</p></li>
+<li><p><a href="https://hackage.haskell.org/package/language-c-quote"><code>language-c-quote</code></a> - not an OpenCL binding per-se, but a way to quasi-quote OpenCL C code. More on this later.</p></li>
+</ul>
+<p>For the sake of completeness, these are the packages I’ll use in this example:</p>
+<ul>
+<li><a href="https://hackage.haskell.org/package/OpenCL"><code>OpenCL</code></a> - the OpenCL bindings</li>
+<li><a href="https://github.com/acowley/CLUtil"><code>CLUtil</code></a> - utilities built on <code>OpenCL</code></li>
+<li><a href="https://hackage.haskell.org/package/language-c-quote"><code>language-c-quote</code></a> - OpenCL C quasiquoting</li>
+<li><a href="https://hackage.haskell.org/package/mainland-pretty"><code>mainland-pretty</code></a> - pretty-printing quasiquoted OpenCL C</li>
+<li><a href="https://hackage.haskell.org/package/vector"><code>vector</code></a> - indexed arrays for storing data</li>
+</ul>
+<h2 id="what-about-opencl-versions">What about OpenCL versions?</h2>
+<p>It doesn’t seem to be necessary to match the OpenCL version on the machine you’re using with the OpenCL version targeted by a Haskell package. For instance, I’m writing this on a MacBook Pro with OpenCL 1.2, but I haven’t had any problems (yet) running the <code>OpenCL</code> package, which targets OpenCL 1.0.</p>
+<p>The OpenCL C language is intended to be backwards compatible (this is mentioned in the spec), but I’m not sure to what extent this also extends to the runtime. I’ll report more on this in the future if I discover any important caveats.</p>
+<h2 id="opencl-native-libraries">OpenCL Native Libraries</h2>
+<p>MacOS has had its own OpenCL implementation since Snow Leopard (10.6), which works with the <code>OpenCL</code> Haskell package. If you’re using a different platform, I can’t provide any guidance, except to say that you’ll probably need to install something to provide an Installable Client Driver (ICD) for OpenCL.</p>
+<h2 id="hello-world-example">Hello-World Example</h2>
+<p>The example I’ll cover in this post is taken from my <a href="https://github.com/lancelet/haskell-opencl-examples">haskell-opencl-examples</a> project on GitHub. Specifically, this is example <a href="https://github.com/lancelet/haskell-opencl-examples/blob/master/app/01-hello-world/Main.hs">01-hello-world/Main.hs</a>.</p>
+<h3 id="imports-and-pragmas">Imports and Pragmas</h3>
+<p>I use the <code>QuasiQuotes</code> language extension to quasiquote an OpenCL C kernel.</p>
+<div class="sourceCode" id="pragmas"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="pragmas-1" data-line-number="1"><span class="ot">{-# LANGUAGE QuasiQuotes #-}</span></a></code></pre></div>
+<p>This is the full list of imports. Everything is imported explicitly or in qualified form <em>except</em> for the <code>Control.Parallel.OpenCL</code> package.</p>
+<div class="sourceCode" id="imports"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="imports-1" data-line-number="1"><span class="kw">import</span>           <span class="dt">Control.Parallel.CLUtil</span>         (<span class="dt">OpenCLState</span> (<span class="dt">OpenCLState</span>),</a>
+<a class="sourceLine" id="imports-2" data-line-number="2">                                                  bufferToVector, clContext,</a>
+<a class="sourceLine" id="imports-3" data-line-number="3">                                                  clDevice, clQueue,</a>
+<a class="sourceLine" id="imports-4" data-line-number="4">                                                  writeVectorToBuffer)</a>
+<a class="sourceLine" id="imports-5" data-line-number="5"><span class="kw">import</span>           <span class="dt">Control.Parallel.OpenCL</span></a>
+<a class="sourceLine" id="imports-6" data-line-number="6"></a>
+<a class="sourceLine" id="imports-7" data-line-number="7"><span class="kw">import</span>           <span class="dt">Control.Monad</span>                   (forM_)</a>
+<a class="sourceLine" id="imports-8" data-line-number="8"><span class="kw">import</span>           <span class="dt">Data.Vector.Storable</span>            (<span class="dt">Vector</span>)</a>
+<a class="sourceLine" id="imports-9" data-line-number="9"><span class="kw">import</span> <span class="kw">qualified</span> <span class="dt">Data.Vector.Storable</span>            <span class="kw">as</span> <span class="dt">V</span></a>
+<a class="sourceLine" id="imports-10" data-line-number="10"><span class="kw">import</span>           <span class="dt">Foreign</span>                         (nullPtr, sizeOf)</a>
+<a class="sourceLine" id="imports-11" data-line-number="11"><span class="kw">import</span>           <span class="dt">Foreign.C.Types</span>                 (<span class="dt">CFloat</span>)</a>
+<a class="sourceLine" id="imports-12" data-line-number="12"><span class="kw">import</span>           <span class="dt">Language.C.Quote.OpenCL</span>         (cfun)</a>
+<a class="sourceLine" id="imports-13" data-line-number="13"><span class="kw">import</span>           <span class="dt">Text.PrettyPrint.Mainland</span>       (prettyCompact)</a>
+<a class="sourceLine" id="imports-14" data-line-number="14"><span class="kw">import</span>           <span class="dt">Text.PrettyPrint.Mainland.Class</span> (ppr)</a></code></pre></div>
+<h3 id="platforms-devices-and-contexts">Platforms, Devices and Contexts</h3>
+<p>The platform model of OpenCL centers around the notions of Platform, Device and Context:</p>
+<dl>
+<dt>Platform</dt>
+<dd>A set of OpenCL Devices available to a host; allows creation of Contexts.
+</dd>
+<dt>Device</dt>
+<dd>Something like a GPU or CPU.
+</dd>
+<dt>Context</dt>
+<dd>A group of Devices for computation.
+</dd>
+</dl>
+<p>Most interactions with OpenCL occur in <code>IO</code>. The source examples below indicate when they’re occuring inside a <code>do</code> block of <code>IO</code>.</p>
+<p>Important functions for enumerating the platforms and devices are the following:</p>
+<ul>
+<li><code>clGetPlatformIDs</code> - lists OpenCL platforms</li>
+<li><code>clGetDeviceIDs</code> - lists devices of a given type for a platform</li>
+<li><code>clGetPlatformInfo</code> - information about a platform</li>
+<li><code>clGetDeviceXXX</code> - various information about a device</li>
+</ul>
+<p>We can get an overview of the OpenCL environment of a machine with a function like <code>describePlatforms</code> below.</p>
+<div class="sourceCode" id="platformInfo"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="platformInfo-1" data-line-number="1"><span class="co">-- | Summarises the OpenCL Platforms and their Devices.</span></a>
+<a class="sourceLine" id="platformInfo-2" data-line-number="2"><span class="co">--</span></a>
+<a class="sourceLine" id="platformInfo-3" data-line-number="3"><span class="co">--   The names of Platforms and all Devices belonging to them are printed to</span></a>
+<a class="sourceLine" id="platformInfo-4" data-line-number="4"><span class="co">--   stdout.</span></a>
+<a class="sourceLine" id="platformInfo-5" data-line-number="5"><span class="ot">describePlatforms ::</span> <span class="dt">IO</span> ()</a>
+<a class="sourceLine" id="platformInfo-6" data-line-number="6">describePlatforms <span class="fu">=</span> <span class="kw">do</span></a>
+<a class="sourceLine" id="platformInfo-7" data-line-number="7"></a>
+<a class="sourceLine" id="platformInfo-8" data-line-number="8">    <span class="co">-- fetch the list of OpenCL Platforms</span></a>
+<a class="sourceLine" id="platformInfo-9" data-line-number="9">    platformList <span class="ot">&lt;- clGetPlatformIDs ::</span> <span class="dt">IO</span> [<span class="dt">CLPlatformID</span>]</a>
+<a class="sourceLine" id="platformInfo-10" data-line-number="10"></a>
+<a class="sourceLine" id="platformInfo-11" data-line-number="11">    <span class="co">-- for each platform,</span></a>
+<a class="sourceLine" id="platformInfo-12" data-line-number="12">    forM_ platformList <span class="fu">$</span> \platform <span class="ot">-&gt;</span> <span class="kw">do</span></a>
+<a class="sourceLine" id="platformInfo-13" data-line-number="13"></a>
+<a class="sourceLine" id="platformInfo-14" data-line-number="14">        <span class="co">-- fetch the list of OpenCL Devices</span></a>
+<a class="sourceLine" id="platformInfo-15" data-line-number="15">        devs <span class="ot">&lt;-</span> clGetDeviceIDs platform <span class="dt">CL_DEVICE_TYPE_ALL</span><span class="ot"> ::</span> <span class="dt">IO</span> [<span class="dt">CLDeviceID</span>]</a>
+<a class="sourceLine" id="platformInfo-16" data-line-number="16"></a>
+<a class="sourceLine" id="platformInfo-17" data-line-number="17">        <span class="co">-- print the Platform name and Device names</span></a>
+<a class="sourceLine" id="platformInfo-18" data-line-number="18">        pname platform</a>
+<a class="sourceLine" id="platformInfo-19" data-line-number="19">        forM_ devs dname</a>
+<a class="sourceLine" id="platformInfo-20" data-line-number="20"></a>
+<a class="sourceLine" id="platformInfo-21" data-line-number="21">  <span class="kw">where</span></a>
+<a class="sourceLine" id="platformInfo-22" data-line-number="22">      putPair name value <span class="fu">=</span> putStrLn (name <span class="fu">++</span> value)</a>
+<a class="sourceLine" id="platformInfo-23" data-line-number="23">      pname p <span class="fu">=</span> clGetPlatformInfo p <span class="dt">CL_PLATFORM_NAME</span> <span class="fu">&gt;&gt;=</span> putPair <span class="st">&quot;Platform: &quot;</span></a>
+<a class="sourceLine" id="platformInfo-24" data-line-number="24">      dname d <span class="fu">=</span> clGetDeviceName d                    <span class="fu">&gt;&gt;=</span> putPair <span class="st">&quot;  Device: &quot;</span></a></code></pre></div>
+<p>On my machine, this produces the following output:</p>
+<div class="repl">
+<pre><code>Platform: Apple
+  Device: Intel(R) Core(TM) i7-6920HQ CPU @ 2.90GHz
+  Device: Intel(R) HD Graphics 530
+  Device: AMD Radeon Pro 460 Compute Engine</code></pre>
+</div>
+<h3 id="context-and-queue-creation">Context and Queue Creation</h3>
+<p>In order to perform a computation, we need to create a context in which the computation will run. The context groups devices and allows creation of things like memory buffers, queues and compiled kernels. Contexts are created using either <code>clCreateContext</code> or <code>clCreateContextFromType</code>. In the example below, we’ll create a context for a CPU device using <code>clCreateContextFromType</code>.</p>
+<p>OpenCL uses an asynchronous processing model. Commands are sent to a queue, and are then executed in a way that is determined by the OpenCL implementation. These enqueued operations can perform actions such as copying memory, executing kernels, and so on. Dependencies between enqueued actions are expressed by passing pointers to them at various points in the API. To create a queue for commands, we can use <code>clCreateCommandQueue</code></p>
+<div class="sourceCode" id="create-context"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="create-context-1" data-line-number="1"><span class="co">-- (... inside an IO do block ...)</span></a>
+<a class="sourceLine" id="create-context-2" data-line-number="2"></a>
+<a class="sourceLine" id="create-context-3" data-line-number="3"><span class="co">-- Create a Context, Queue and a CLUtil OpenCLState</span></a>
+<a class="sourceLine" id="create-context-4" data-line-number="4">context <span class="ot">&lt;-</span> clCreateContextFromType [] [<span class="dt">CL_DEVICE_TYPE_CPU</span>] print</a>
+<a class="sourceLine" id="create-context-5" data-line-number="5">device  <span class="ot">&lt;-</span> head <span class="fu">&lt;$&gt;</span> clGetContextDevices context</a>
+<a class="sourceLine" id="create-context-6" data-line-number="6">queue   <span class="ot">&lt;-</span> clCreateCommandQueue context device []</a>
+<a class="sourceLine" id="create-context-7" data-line-number="7"><span class="co">-- NB: OpenCLState is used by CLUtil when manipulating vector buffers</span></a>
+<a class="sourceLine" id="create-context-8" data-line-number="8"><span class="kw">let</span> state <span class="fu">=</span> <span class="dt">OpenCLState</span></a>
+<a class="sourceLine" id="create-context-9" data-line-number="9">          { clDevice  <span class="fu">=</span> device</a>
+<a class="sourceLine" id="create-context-10" data-line-number="10">          , clContext <span class="fu">=</span> context</a>
+<a class="sourceLine" id="create-context-11" data-line-number="11">          , clQueue   <span class="fu">=</span> queue</a>
+<a class="sourceLine" id="create-context-12" data-line-number="12">          }</a></code></pre></div>
+<p>If any errors occur, they will be thrown as exceptions in <code>IO</code>. The last parameter to <code>clCreateContextFromType</code> is a function of type <code>String -&gt; IO ()</code>, which is also used to report errors.</p>
+<h3 id="kernel">Kernel</h3>
+<p>The kernel is the OpenCL code that we’re going to execute. This example uses the <code>language-c-quote</code> package so that the kernel source can be quasi-quoted.</p>
+<div class="sourceCode" id="kernel-source"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="kernel-source-1" data-line-number="1"><span class="co">-- | The kernel to execute: the equivalient of 'map (*2)'.</span></a>
+<a class="sourceLine" id="kernel-source-2" data-line-number="2"><span class="ot">kernelSource ::</span> <span class="dt">String</span></a>
+<a class="sourceLine" id="kernel-source-3" data-line-number="3">kernelSource <span class="fu">=</span> prettyCompact <span class="fu">.</span> ppr <span class="fu">$</span> [cfun|</a>
+<a class="sourceLine" id="kernel-source-4" data-line-number="4">    /* This example kernel just does `map (*2)` */</a>
+<a class="sourceLine" id="kernel-source-5" data-line-number="5">    kernel void doubleArray(</a>
+<a class="sourceLine" id="kernel-source-6" data-line-number="6">        global float *in,</a>
+<a class="sourceLine" id="kernel-source-7" data-line-number="7">        global float *out</a>
+<a class="sourceLine" id="kernel-source-8" data-line-number="8">    ) {</a>
+<a class="sourceLine" id="kernel-source-9" data-line-number="9">        int i = get_global_id(0);</a>
+<a class="sourceLine" id="kernel-source-10" data-line-number="10">        out[i] = 2 * in[i];</a>
+<a class="sourceLine" id="kernel-source-11" data-line-number="11">    }</a>
+<a class="sourceLine" id="kernel-source-12" data-line-number="12">|]</a></code></pre></div>
+<p>In this example, the kernel source is supplied to OpenCL as a <code>String</code>. The kernel has to be compiled by OpenCL at runtime into a form that can be executed on the hardware we’ve chosen.</p>
+<div class="sourceCode" id="kernel-compile"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="kernel-compile-1" data-line-number="1"><span class="co">-- (... inside an IO do block ...)</span></a>
+<a class="sourceLine" id="kernel-compile-2" data-line-number="2"></a>
+<a class="sourceLine" id="kernel-compile-3" data-line-number="3"><span class="co">-- Create the Kernel</span></a>
+<a class="sourceLine" id="kernel-compile-4" data-line-number="4">program <span class="ot">&lt;-</span> clCreateProgramWithSource context kernelSource</a>
+<a class="sourceLine" id="kernel-compile-5" data-line-number="5">clBuildProgram program [device] <span class="st">&quot;&quot;</span></a>
+<a class="sourceLine" id="kernel-compile-6" data-line-number="6">kernel <span class="ot">&lt;-</span> clCreateKernel program <span class="st">&quot;doubleArray&quot;</span></a></code></pre></div>
+<h3 id="buffers">Buffers</h3>
+<p>Data is sent from Haskell to OpenCL using a buffer. In this example, we’re going to use Storable Vectors (from the <code>vector</code> package) to hold data on the Haskell side. These are a good choice because they store data contigously under-the-hood.</p>
+<p>In order to use Vectors easily with OpenCL, we’ll make use of the <a href="https://github.com/acowley/CLUtil">CLUtil</a> library by Anthony Cowley et al.</p>
+<div class="sourceCode" id="buffers"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="buffers-1" data-line-number="1"><span class="co">-- (... inside an IO do block ...)</span></a>
+<a class="sourceLine" id="buffers-2" data-line-number="2"></a>
+<a class="sourceLine" id="buffers-3" data-line-number="3"><span class="co">-- Set up memory</span></a>
+<a class="sourceLine" id="buffers-4" data-line-number="4"><span class="kw">let</span></a>
+<a class="sourceLine" id="buffers-5" data-line-number="5"><span class="ot">    inputData ::</span> <span class="dt">Vector</span> <span class="dt">CFloat</span></a>
+<a class="sourceLine" id="buffers-6" data-line-number="6">    inputData <span class="fu">=</span> V.fromList [(<span class="fu">-</span><span class="dv">4</span>) <span class="fu">..</span> <span class="dv">4</span>]</a>
+<a class="sourceLine" id="buffers-7" data-line-number="7"></a>
+<a class="sourceLine" id="buffers-8" data-line-number="8">    nElem  <span class="fu">=</span> V.length inputData</a>
+<a class="sourceLine" id="buffers-9" data-line-number="9">    nBytes <span class="fu">=</span> nElem <span class="fu">*</span> sizeOf (undefined<span class="ot"> ::</span> <span class="dt">CFloat</span>)</a>
+<a class="sourceLine" id="buffers-10" data-line-number="10"></a>
+<a class="sourceLine" id="buffers-11" data-line-number="11"><span class="co">-- Buffers for input and output data.</span></a>
+<a class="sourceLine" id="buffers-12" data-line-number="12"><span class="co">-- We request OpenCL to create a buffer on the host (CL_MEM_ALLOC_HOST_PTR)</span></a>
+<a class="sourceLine" id="buffers-13" data-line-number="13"><span class="co">-- since we're using CPU. The performance here may not be ideal, because</span></a>
+<a class="sourceLine" id="buffers-14" data-line-number="14"><span class="co">-- we're copying the buffer. However, it's safe</span></a>
+<a class="sourceLine" id="buffers-15" data-line-number="15">bufIn <span class="ot">&lt;-</span> clCreateBuffer context</a>
+<a class="sourceLine" id="buffers-16" data-line-number="16">                        [<span class="dt">CL_MEM_READ_ONLY</span>, <span class="dt">CL_MEM_ALLOC_HOST_PTR</span>]</a>
+<a class="sourceLine" id="buffers-17" data-line-number="17">                        (nBytes, nullPtr)</a>
+<a class="sourceLine" id="buffers-18" data-line-number="18">bufOut <span class="ot">&lt;-</span> clCreateBuffer context</a>
+<a class="sourceLine" id="buffers-19" data-line-number="19">                         [<span class="dt">CL_MEM_WRITE_ONLY</span>, <span class="dt">CL_MEM_ALLOC_HOST_PTR</span>]</a>
+<a class="sourceLine" id="buffers-20" data-line-number="20">                         (nBytes, nullPtr)</a>
+<a class="sourceLine" id="buffers-21" data-line-number="21"></a>
+<a class="sourceLine" id="buffers-22" data-line-number="22"><span class="co">-- Copy our input data Vector to the input buffer; blocks until complete</span></a>
+<a class="sourceLine" id="buffers-23" data-line-number="23">writeVectorToBuffer state bufIn inputData</a></code></pre></div>
+<h3 id="run-the-kernel">Run the kernel</h3>
+<p>To run the compiled kernel, we hook up the buffers to the kernel arguments with and then enqueue the kernel to be run.</p>
+<div class="sourceCode" id="kernel-run"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="kernel-run-1" data-line-number="1"><span class="co">-- (... inside an IO do block ...)</span></a>
+<a class="sourceLine" id="kernel-run-2" data-line-number="2"></a>
+<a class="sourceLine" id="kernel-run-3" data-line-number="3"><span class="co">-- Run the kernel</span></a>
+<a class="sourceLine" id="kernel-run-4" data-line-number="4">clSetKernelArgSto kernel <span class="dv">0</span> bufIn</a>
+<a class="sourceLine" id="kernel-run-5" data-line-number="5">clSetKernelArgSto kernel <span class="dv">1</span> bufOut</a>
+<a class="sourceLine" id="kernel-run-6" data-line-number="6">execEvent <span class="ot">&lt;-</span> clEnqueueNDRangeKernel queue kernel [nElem] [] []</a></code></pre></div>
+<h3 id="copy-output-data">Copy output data</h3>
+<p>At this point, the kernel has not necessary even started running. OpenCL has an asynchronous processing model where many execution details are left to the implementation. Consequently, it’s important to wait for computations to finish. In this case, we’ll use <code>bufferToVector</code>, from <code>CLUtil</code>, which internally waits for the kernel execution to complete. It knows the dependent operations because <code>execEvent</code> is passed in as a parameter. <code>bufferToVector</code> returns a new vector when it has finished, creating it from the <code>bufOut</code> output buffer.</p>
+<div class="sourceCode" id="kernel-run"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="kernel-run-1" data-line-number="1"><span class="co">-- (... inside an IO do block ...)</span></a>
+<a class="sourceLine" id="kernel-run-2" data-line-number="2"></a>
+<a class="sourceLine" id="kernel-run-3" data-line-number="3"><span class="co">-- Get the result; blocks until complete</span></a>
+<a class="sourceLine" id="kernel-run-4" data-line-number="4">outputData <span class="ot">&lt;-</span> bufferToVector queue</a>
+<a class="sourceLine" id="kernel-run-5" data-line-number="5">                             bufOut</a>
+<a class="sourceLine" id="kernel-run-6" data-line-number="6">                             nElem</a>
+<a class="sourceLine" id="kernel-run-7" data-line-number="7">                             [execEvent]</a>
+<a class="sourceLine" id="kernel-run-8" data-line-number="8"><span class="ot">                             ::</span> <span class="dt">IO</span> (<span class="dt">Vector</span> <span class="dt">CFloat</span>)</a></code></pre></div>
+<p>And that’s it! We can print the <code>outputData</code> vector to confirm that the operation worked as expected and multiplied all the elements by 2.</p>
+<h2 id="recap">Recap</h2>
+<p>This example covered:</p>
+<ul>
+<li>basics of OpenCL</li>
+<li>choice OpenCL package</li>
+<li>platform model: Platform, Context and Device</li>
+<li>compiling a kernel</li>
+<li>buffer management</li>
+<li>running a kernel</li>
+</ul>
+</div>
+
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="blog-footer">
+            <p>
+                Site proudly generated by
+                <a href="http://jaspervdj.be/hakyll">Hakyll</a>, using
+                a <a href="https://getbootstrap.com">Bootstrap</a> blog theme.
+                <br />
+                Site source is available here:
+                <a href="https://github.com/lancelet/blog-source">https://github.com/lancelet/blog-source</a>.
+            </p>
+        </footer>
+
+        <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
+    </body>
+</html>

@@ -222,7 +222,7 @@
 <a class="sourceLine" id="buffers-22" data-line-number="22"><span class="co">-- Copy our input data Vector to the input buffer; blocks until complete</span></a>
 <a class="sourceLine" id="buffers-23" data-line-number="23">writeVectorToBuffer state bufIn inputData</a></code></pre></div>
 <h3 id="run-the-kernel">Run the kernel</h3>
-<p>To run the compiled kernel, we hook up the buffers to the kernel arguments with and then enqueue the kernel to be run.</p>
+<p>To run the compiled kernel, we hook up the buffers to the kernel arguments and then enqueue the kernel to be run.</p>
 <div class="sourceCode" id="kernel-run"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="kernel-run-1" data-line-number="1"><span class="co">-- (... inside an IO do block ...)</span></a>
 <a class="sourceLine" id="kernel-run-2" data-line-number="2"></a>
 <a class="sourceLine" id="kernel-run-3" data-line-number="3"><span class="co">-- Run the kernel</span></a>

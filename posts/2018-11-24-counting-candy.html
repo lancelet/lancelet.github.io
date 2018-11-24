@@ -165,7 +165,7 @@ Beans per Baby: 2.44</code></pre>
 <a class="sourceLine" id="cb8-5" data-line-number="5">    babies <span class="fu">=</span> Map.findWithDefault <span class="dv">0</span> <span class="st">&quot;jellybabies&quot;</span> m</a></code></pre></div>
 <p>Now we need a way to smash together two <code>JellyCount</code>s to produce another one which contains their combined count. This behaviour is captured by a pair of type classes in Haskell called <code>Semigroup</code> and <code>Monoid</code>, which together capture another functional pattern which is extremely common:</p>
 <div class="sourceCode" id="cb9"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb9-1" data-line-number="1"><span class="kw">instance</span> <span class="dt">Semigroup</span> <span class="dt">JellyCount</span> <span class="kw">where</span></a>
-<a class="sourceLine" id="cb9-2" data-line-number="2">    <span class="co">-- how to we smash two together?</span></a>
+<a class="sourceLine" id="cb9-2" data-line-number="2">    <span class="co">-- how do we smash two together?</span></a>
 <a class="sourceLine" id="cb9-3" data-line-number="3">    <span class="dt">JellyCount</span> a b <span class="fu">&lt;&gt;</span> <span class="dt">JellyCount</span> c d <span class="fu">=</span> <span class="dt">JellyCount</span> (a <span class="fu">+</span> c) (b <span class="fu">+</span> d)</a>
 <a class="sourceLine" id="cb9-4" data-line-number="4"></a>
 <a class="sourceLine" id="cb9-5" data-line-number="5"><span class="kw">instance</span> <span class="dt">Monoid</span> <span class="dt">JellyCount</span> <span class="kw">where</span></a>

@@ -1,0 +1,19 @@
+/***********************
+ * Basic Color Palette *
+ ***********************/
+// Grey scale colors.
+$palette_grey_0: rgb(245, 245, 245);
+$palette_grey_1: rgb(220, 220, 220);
+$palette_grey_2: rgb(174, 174, 174);
+$palette_grey_3: rgb(127, 127, 127);
+$palette_grey_4: rgb(72, 72, 72);
+$palette_grey_5: rgb(40, 40, 40);
+$palette_grey_6: rgb(17, 17, 17);
+// Highlight color
+$palette_highlight: rgb(4, 170, 109);
+
+// "Chrome" is the header and footer of all pages.
+$chrome_background: $palette_grey_5;
+
+// The "page" background is the background for blog pages, etc.
+$page_background: $palette_grey_0;

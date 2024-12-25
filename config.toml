@@ -1,0 +1,24 @@
+# The URL the site will be built for
+base_url = "https://lancelet.github.io"
+
+minify_html = true
+
+
+compile_sass = true
+
+build_search_index = true
+
+taxonomies = [
+    { name = "tags", feed = false }
+]
+
+[markdown]
+highlight_code = true
+highlight_theme = "css"
+highlight_themes_css = [
+    { theme = "base16-ocean-light", filename = "syntax-theme.css" }
+]
+smart_punctuation = true
+
+[extra]
+# Put all your custom variables here

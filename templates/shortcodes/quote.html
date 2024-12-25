@@ -1,0 +1,19 @@
+<div class="blockquote-container">
+    <blockquote>
+        <div class="blockquote-body">
+            {{ body }}
+        </div>
+        {% if author %}
+        <div class="blockquote-author">
+            &mdash;
+            {% if link %}
+            <a href="{{ link }}">
+                {% endif %}
+                {{ author }}
+                {% if link %}
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </blockquote>
+</div>

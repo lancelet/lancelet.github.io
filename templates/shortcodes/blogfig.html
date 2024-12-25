@@ -1,0 +1,14 @@
+<figure class="blogfig">
+    {% if img %}
+    <img class="single-image" src="{{ img }}" />
+    {% elif imgs %}
+    <div class="multiple-image">
+        {% for img in imgs | split(pat=';') %}
+        <img src="{{ img }}" />
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% if body %}
+    <figcaption>{{ body | markdown | safe }}</figcaption>
+    {% endif %}
+</figure>

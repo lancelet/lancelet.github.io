@@ -1,0 +1,25 @@
+@use '_fonts.scss';
+@use '_colors.scss';
+
+$footer_height: 2rem;
+$footer_font_size: fonts.$body_size * 0.875;
+$footer_color_foreground: colors.$palette_grey_2;
+
+footer.main-footer {
+    background-color: colors.$chrome_background;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    align-items: center;
+    justify-content: center;
+    height: $footer_height;
+}
+
+footer.main-footer p {
+    @include fonts.manrope-font;
+    min-width: 0;
+    min-height: 0;
+    font-weight: 300;
+    color: $footer_color_foreground;
+    font-size: $footer_font_size;
+}

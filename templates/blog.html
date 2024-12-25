@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block content %}
+<main class="card-grid-container">
+    <div class="card-grid">
+        {% for page in section.pages %}
+        <article class="card">
+            <a href="{{ page.permalink | safe }}">
+                <header>
+                    <figure>
+                        {% if page.extra.summary_image %}
+                        <img src="{{ page.permalink | safe }}/{{ page.extra.summary_image }}" />
+                        {% endif %}
+                        <!-- Image -->
+                    </figure>
+                    <div class="categories">
+                        {% if page.taxonomies.tags %}
+                        {% for tag in page.taxonomies.tags %}
+                        <div class="category">
+                            {{ tag }}
+                        </div>
+                        {% endfor %}
+                        {% endif %}
+                    </div>
+                    <h2>{{ page.title }}</h2>
+                </header>
+                <section class="description">
+                    <p>{{ page.description }}</p>
+                </section>
+                <footer>
+                    <div class="reading-time">
+                        {% if page.reading_time == 0 %}
+                        Reading time: &lt; 1 min.
+                        {% else %}
+                        Reading time: {{ page.reading_time }} min.
+                        {% endif %}
+                    </div>
+                    {% if page.updated %}
+                    <div class="last-updated">
+                        <time datetime="{{ page.updated }}">{{ page.updated }}</time>
+                    </div>
+                    {% endif %}
+                    <div class="author-date">
+                        <div class="authors">
+                            {% for author in page.authors %}
+                            <span class="author">{{ author }}</span>
+                            {% endfor %}
+                        </div>
+                        <time datetime="{{ page.date }}">{{ page.date }}</time>
+                    </div>
+                </footer>
+            </a>
+        </article>
+        {% endfor %}
+    </div>
+</main>
+{% endblock content %}

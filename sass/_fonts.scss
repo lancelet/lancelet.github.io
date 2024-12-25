@@ -1,0 +1,16 @@
+// Basic font definitions.
+
+@mixin manrope-font {
+    font-family: "Manrope", serif;
+    font-optical-sizing: auto;
+    font-style: normal;
+}
+
+@mixin plex-mono-font {
+    font-family: "IBM Plex Mono", monospace;
+    font-weight: 500;
+    font-style: normal;
+}
+
+// Controlling font size.
+$body_size: 18px;

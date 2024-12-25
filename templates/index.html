@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% set github_icon_svg = load_data(path='icons/socials-github.svg') %}
+{% set linkedin_icon_svg = load_data(path='icons/socials-linkedin.svg') %}
+{% set bluesky_icon_svg = load_data(path='icons/socials-bluesky.svg') %}
+<main class="title-page">
+
+    <div class="about-pane">
+        <figure>
+            <img class="profile-pic" src="images/jmerritt.jpg" />
+        </figure>
+        <header>
+            <h2>Jonathan Merritt</h2>
+        </header>
+        <div class="socials-links">
+            <a href="https://github.com/lancelet">
+                {{ github_icon_svg | safe }}
+            </a>
+            <a href="https://www.linkedin.com/in/js-merritt/">
+                {{ linkedin_icon_svg | safe }}
+            </a>
+            <a href="https://bsky.app/profile/lancelet.bsky.social">
+                {{ bluesky_icon_svg | safe }}
+            </a>
+        </div>
+    </div>
+
+</main>
+{% endblock content %}

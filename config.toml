@@ -1,5 +1,5 @@
 # The URL the site will be built for
-base_url = "https://lancelet.github.io"
+base_url = "https://jmerritt.blog"
 
 minify_html = true
 

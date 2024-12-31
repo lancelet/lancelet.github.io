@@ -1,0 +1,143 @@
+@use 'sass:color';
+@use '_fonts.scss';
+@use '_colors.scss';
+
+$card_category_font_size: fonts.$body_size * 0.7;
+$card_heading_font_size: fonts.$body_size * 0.85;
+$card_description_font_size: fonts.$body_size * 0.8;
+$card_author_font_size: fonts.$body_size * 0.75;
+$card_reading_time_font_size: fonts.$body_size * 0.75;
+
+$card_color_foreground: colors.$palette_grey_6;
+$card_color_background: colors.$palette_grey_1;
+$card_color_background_hover: mix($card_color_background, colors.$palette_highlight, 95%);
+$card_color_hover_border: mix($card_color_background, colors.$palette_highlight, 50%);
+$card_color_author_date_sep: colors.$palette_grey_3;
+
+$card_transition_period: 0.22s;
+
+$card_padding: 1.4rem;
+$card_author_date_gap: 8px;
+$card_border_radius: 6px;
+$card_image_border_radius: 6px;
+$card_grid_gap: 1.6rem;
+$card_border_width: 2px;
+
+$card_width: 320px;
+$grid_limit_2_columns: 1080px;
+$grid_limit_1_column: 720px;
+$grid_limit_1_column_fit: 600px;
+
+.card-grid-container {
+    @include fonts.manrope-font;
+    line-height: 1.25;
+    display: flex;
+    flex-direction: columns;
+    align-content: center;
+    width: 100%;
+}
+
+.card-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: $card_grid_gap;
+    margin: 42px auto 16px auto;
+}
+
+
+.card-grid a {
+    color: $card_color_foreground;
+    text-decoration: none;
+}
+
+.card {
+    width: $card_width;
+    padding: $card_padding;
+    display: flex;
+    flex-direction: column;
+    border-radius: $card_border_radius;
+    background: $card_color_background;
+    border: $card_border_width solid $card_color_background;
+}
+
+.card img {
+    border-radius: $card_image_border_radius;
+}
+
+.card:hover {
+    border: $card_border_width solid $card_color_hover_border;
+    background: $card_color_background_hover;
+    transition: all $card_transition_period ease;
+}
+
+.card .categories {
+    font-size: $card_category_font_size;
+    margin-block-start: 0.5ex;
+    margin-block-end: 0.5ex;
+    display: flex;
+    flex-direction: row;
+}
+
+.card .category:not(:last-child)::after {
+    content: ",";
+    margin-right: 0.2ch;
+}
+
+.card h2 {
+    margin-block-start: 2.5ex;
+    margin-block-end: 1ex;
+    font-size: $card_heading_font_size;
+}
+
+.card .description {
+    margin-block-start: 0.5ex;
+    margin-block-end: 0.5ex;
+    font-size: $card_description_font_size;
+}
+
+.card footer {
+    margin-block-start: 3ex;
+}
+
+.card .reading-time {
+    margin-block-end: 0.5ex;
+    font-size: $card_reading_time_font_size;
+}
+
+.card footer .author-date {
+    font-size: $card_author_font_size;
+    display: flex;
+    flex-direction: row;
+    gap: $card_author_date_gap;
+}
+
+.card .authors {
+    border-right: 1px solid $card_color_author_date_sep;
+    padding-right: $card_author_date_gap;
+}
+
+@media(width <=$grid_limit_2_columns) {
+    .card-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media(width <=$grid_limit_1_column) {
+    .card-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media(width <=$grid_limit_1_column_fit) {
+    .card-grid {
+        display: flex;
+        flex-direction: column;
+        gap: $card_padding;
+        margin: $card_padding 0 $card_padding 0;
+    }
+
+    .card {
+        width: unset;
+        margin: 0 $card_padding 0 $card_padding;
+    }
+}

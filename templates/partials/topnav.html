@@ -1,0 +1,35 @@
+{% if section or page %}
+{% set section_or_page = section | default(value=page) %}
+{% set path = section_or_page.path %}
+{% else %}
+{% set path = '' %}
+{% endif %}
+
+{% set home_icon_svg = load_data(path='icons/home.svg') %}
+{% set projects_icon_svg = load_data(path='icons/projects.svg') %}
+{% set blog_icon_svg = load_data(path='icons/blog.svg') %}
+{% set hamburger_icon_svg = load_data(path='icons/hamburger.svg') %}
+
+<nav class="main-nav">
+    <p class="name">Jonathan Merritt</p>
+    <a href="{{ get_url(path='/') }}" class="{% if path == '/' %}active{% endif %}">
+        {{ home_icon_svg | safe }} Home
+    </a>
+    <a href="{{ get_url(path='/projects') }}" class="{% if path is starting_with('/projects') %}active{% endif %}">
+        {{ projects_icon_svg | safe }} Projects
+    </a>
+    <a href="{{ get_url(path='/blog') }}" class="{% if path is starting_with('/blog') %}active{% endif %}">
+        {{ blog_icon_svg | safe }} Blog
+    </a>
+    <a href="javascript:void(0);" class="hamburger">
+        {{ hamburger_icon_svg | safe }}
+    </a>
+    <div id="hamburger-dropdown">
+        <ul>
+            <li><a href="{{ get_url(path='/') }}">{{ home_icon_svg | safe }} Home</a></li>
+            <li><a href="{{ get_url(path='/projects') }}">{{ projects_icon_svg | safe }} Projects</a></li>
+            <li><a href="{{ get_url(path='/blog') }}">{{ blog_icon_svg | safe }} Blog</a></li>
+        </ul>
+    </div>
+    <script src="{{ get_url(path='js/hamburger-control.js') }}"></script>
+</nav>

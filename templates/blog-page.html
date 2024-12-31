@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+<article class="blog">
+    <h1>
+        {{ page.title }}
+    </h1>
+    <header>
+        <figure>
+            {% if page.extra.summary_image %}
+            <img src="{{ page.extra.summary_image | safe }}" />
+            {% endif %}
+        </figure>
+        <div class="blog-top-card">
+            <div class="categories">
+                {% if page.taxonomies.tags %}
+                Tags:&nbsp;
+                {% for tag in page.taxonomies.tags %}
+                <div class="category">
+                    {{ tag }}
+                </div>
+                {% endfor %}
+                {% endif %}
+            </div>
+            <div class="reading-time">
+                {% if page.reading_time == 0 %}
+                Reading time: &lt; 1 min.
+                {% else %}
+                Reading time: {{ page.reading_time }} min.
+                {% endif %}
+            </div>
+            {% if page.updated %}
+            <div class="last-updated">
+                Last updated: <time datetime="{{ page.updated }}">{{ page.updated }}</time>
+            </div>
+            {% endif %}
+            <div class="author-date">
+                <div class="authors">
+                    {% for author in page.authors %}
+                    <span class="author">{{ author }}</span>
+                    {% endfor %}
+                </div>
+                <time datetime="{{ page.date }}">{{ page.date }}</time>
+            </div>
+        </div>
+    </header>
+    {{ page.content | safe }}
+</article>
+{% endblock content %}

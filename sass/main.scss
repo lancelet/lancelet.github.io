@@ -1,0 +1,38 @@
+@use '_reset.scss';
+@use '_colors.scss';
+@use '_fonts.scss';
+
+@use '_title-page.scss';
+@use '_footer.scss';
+@use '_topnav.scss';
+@use '_cards.scss';
+@use '_blog-page.scss';
+@use '_projects.scss';
+
+//---- Main styling ----------------------------------------------------------
+
+html,
+body {
+    @include fonts.manrope-font;
+    background-color: colors.$chrome_background;
+    font-size: fonts.$body_size;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+code {
+    @include fonts.plex-mono-font;
+}
+
+pre {
+    @include fonts.plex-mono-font;
+}
+
+main {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    overflow: hidden;
+    background-color: colors.$page_background;
+}

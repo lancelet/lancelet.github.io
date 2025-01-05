@@ -50,6 +50,7 @@ article.blog {
 
 .blog p,
 .blog .blockquote-container,
+.blog .youtube,
 .blog ol,
 .blog ul,
 .blog pre {
@@ -234,4 +235,12 @@ article.blog {
 
 .blog .blogfig figcaption p {
     margin: 0;
+}
+
+//---- YouTube videos
+
+.blog .youtube {
+    width: 100%;
+    position: relative;
+    aspect-ratio: 16/9;
 }
